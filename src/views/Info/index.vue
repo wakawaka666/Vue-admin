@@ -5,7 +5,7 @@
         <div class="label-wrap category">
           <label for>分类：</label>
           <div class="wrap-content">
-            <el-select v-model="value" placeholder="请选择" style="width: 100%;">
+            <el-select v-model="category_value" placeholder="请选择" style="width: 100%;">
               <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -23,7 +23,7 @@
           <div class="wrap-content">
             <el-date-picker
               style="width: 100%;"
-              v-model="value2"
+              v-model="date_value"
               type="datetimerange"
               align="right"
               start-placeholder="开始日期"
@@ -40,7 +40,7 @@
           <div class="wrap-content">
             <el-select v-model="search_key" style="width: 100%;">
               <el-option
-                v-for="item in searchOption"
+                v-for="item in search_option"
                 :key="item.value"
                 :value="item.value"
                 :label="item.label"
@@ -61,14 +61,14 @@
       <el-col :span="2">.</el-col>
 
       <el-col :span="2">
-        <el-button type="danger" class="pull-right" style="width: 100%;">新增</el-button>
+        <el-button type="danger" class="pull-right" style="width: 100%;" @click="dialog_info = true">新增</el-button>
       </el-col>
     </el-row>
 
     <div class="back-space-30"></div>
 
     <!-- 表格数据 -->
-    <el-table :data="tableData" border style="width: 100%">
+    <el-table :data="table_data" border style="width: 100%">
       <el-table-column type="selection" width="45"></el-table-column>
       <el-table-column prop="title" label="标题" width></el-table-column>
       <el-table-column prop="category" label="类别" width></el-table-column>
@@ -102,12 +102,19 @@
         ></el-pagination>
       </el-col>
     </el-row>
+
+    <!-- 新增弹窗 -->
+    <DialogInfo :flag = "dialog_info"></DialogInfo>
+
   </div>
 </template>
 
 <script>
+// dialog
+import DialogInfo from './dialog/info'
 export default {
   name: "infoIndex",
+  components:{DialogInfo},
   data() {
     return {
       // 类型
@@ -126,7 +133,7 @@ export default {
         }
       ],
       // 关键字
-      searchOption: [
+      search_option: [
         {
           value: "id",
           label: "ID"
@@ -136,13 +143,8 @@ export default {
           label: "标题"
         }
       ],
-      // 默认值
-      value: "",
-      value2: "",
-      search_key: "id",
-      search_keyWord: "",
       // 表格数据
-      tableData: [
+      table_data: [
         {
           title:
             "与现实生活一致：与现实生活的流程、逻辑保持一致，遵循用户习惯的语言和概念；",
@@ -164,7 +166,13 @@ export default {
           date: "2019-09-10 19:31:31",
           user: "管理员"
         }
-      ]
+      ],
+      // 基础数据
+      category_value: "",
+      date_value: "",
+      search_key: "id",
+      search_keyWord: "",
+      dialog_info: false,
     };
   },
   created() {},
