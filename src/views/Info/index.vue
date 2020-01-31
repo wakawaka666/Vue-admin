@@ -61,7 +61,12 @@
       <el-col :span="2">.</el-col>
 
       <el-col :span="2">
-        <el-button type="danger" class="pull-right" style="width: 100%;" @click="dialog_info = true">新增</el-button>
+        <el-button
+          type="danger"
+          class="pull-right"
+          style="width: 100%;"
+          @click="dialog_info = true"
+        >新增</el-button>
       </el-col>
     </el-row>
 
@@ -75,20 +80,19 @@
       <el-table-column prop="date" label="日期" width></el-table-column>
       <el-table-column prop="user" label="管理员" width></el-table-column>
       <el-table-column label="操作">
-        <template slot-scope="">
-          <el-button size="mini" type="danger">编辑</el-button>
-          <el-button size="mini" type="success">删除</el-button>
+        <template slot-scope>
+          <el-button size="mini" type="success" @click="dialog_info = true">编辑</el-button>
+          <el-button size="mini" type="danger" @click="deleteItem">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <div class="back-space-30"></div>
 
-
     <!-- 底部分页 -->
     <el-row>
       <el-col :span="12">
-        <el-button size="small">批量删除</el-button>
+        <el-button size="small" @click="deleteAll">批量删除</el-button>
       </el-col>
       <el-col :span="12">
         <el-pagination
@@ -102,19 +106,17 @@
         ></el-pagination>
       </el-col>
     </el-row>
-
-    <!-- 新增弹窗 -->
-    <DialogInfo :flag = "dialog_info"></DialogInfo>
-
+    <!-- 新增弹窗  父组件通过flag属性 把dialog_info传参给子组件 -->
+    <DialogInfo :flag.sync="dialog_info"></DialogInfo>
   </div>
 </template>
 
 <script>
 // dialog
-import DialogInfo from './dialog/info'
+import DialogInfo from "./dialog/info";
 export default {
   name: "infoIndex",
-  components:{DialogInfo},
+  components: { DialogInfo },
   data() {
     return {
       // 类型
@@ -172,19 +174,40 @@ export default {
       date_value: "",
       search_key: "id",
       search_keyWord: "",
-      dialog_info: false,
+      dialog_info: false
     };
   },
   created() {},
   mounted() {},
   methods: {
     // 页面条数
-    handleSizeChange(val){
-      console.log(val)
+    handleSizeChange(val) {
+      console.log(val);
     },
     // 页码
-    handleCurrentChange(val){
-      console.log(val)
+    handleCurrentChange(val) {
+      console.log(val);
+    },
+    // 单个删除
+    deleteItem() {
+      this.confirm({
+        content: "确认删除当前信息，确认后无法恢复！！",
+        type: "info",
+        fn: this.confirmDelete,
+        id: "1111111"
+      })
+    },
+    // 批量删除
+    deleteAll(){
+      this.confirm({
+        content: "确认删除选择数据，确认后无法恢复！！",
+        tip: "警告",
+        fn: this.confirmDelete,
+        id: "22222222"
+      })
+    },
+    confirmDelete(value){
+      console.log(value)
     }
   }
 };

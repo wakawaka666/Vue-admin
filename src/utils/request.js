@@ -1,6 +1,7 @@
 import axios from 'axios'
 // 因为是新创建的单页面所以需要单独引用
 import { Message } from 'element-ui';
+import {getToken, getUserName} from './app'
 
 // 定义BASEURL 从vue.config.js把devAPI（判断环境如果不是production那就使用devApi）传给baseURL
 const BASEURL = process.env.NODE_ENV === 'production' ? '' : '/devApi';
@@ -19,14 +20,13 @@ service.interceptors.request.use(function (config) {
     //Token
     //userID
     //aid....
-    console.log(config.headers)
+    // console.log(config.headers)
     // 根据业务需求
 
 
     //最终目的是在请求头添加参数
-    config.headers['Token'] = '111111'
-    config.headers['userID'] = '222222'
-    config.headers['aid'] = '3333333'
+    config.headers['Tokey'] = getToken()
+    config.headers['UserName'] = getUserName()
 
     return config;
 }, function (error) {

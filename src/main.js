@@ -13,10 +13,14 @@ import 'element-ui/lib/theme-chalk/index.css'
 import '../src/assets/css/reset.scss'
 // 引入自定义全局组件 SVG
 import './icons/index.js'
+// 引入自定义全局方法 
+import global from './utils/global.js'
+
 
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
+Vue.use(global)
 
 
 

@@ -22,7 +22,6 @@ export default {};
 }
 .main-content {
     width: 100%;
-    height: 100%;
     padding-top: $layoutHeader + 30;
     padding-right: 30px;
     @include webkit(box-sizing,border-box);
