@@ -50,3 +50,15 @@ export function DeleteCategory(data) {
         data
     })
 }
+
+ /*
+ 修改一级分类
+ */
+export function EditCategory(data) {
+    // return 从request.js请求错误的信息返回给index.vue 里的 GetSms()
+    return service.request({
+        method: "post",
+        url: "/news/editCategory/",
+        data
+    })
+}

@@ -194,7 +194,6 @@ export default {
         content: "确认删除当前信息，确认后无法恢复！！",
         type: "info",
         fn: this.confirmDelete,
-        id: "1111111"
       })
     },
     // 批量删除
@@ -203,7 +202,6 @@ export default {
         content: "确认删除选择数据，确认后无法恢复！！",
         tip: "警告",
         fn: this.confirmDelete,
-        id: "22222222"
       })
     },
     confirmDelete(value){

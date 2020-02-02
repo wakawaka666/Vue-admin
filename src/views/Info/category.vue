@@ -1,21 +1,29 @@
 <template>
   <div id="category">
-    <el-button type="danger" @click="addFirst">添加一级分类</el-button>
+    <el-button type="danger" @click="addFirst({type: 'category_first_add'})">添加一级分类</el-button>
     <hr class="hr-e9e9e9" />
     <el-row :gutter="30">
       <el-col :span="10">
         <div class="category-wrap">
           <div class="category" v-for="firstItem in category.item" :key="firstItem.id">
+            <!-- 一级分类 -->
             <h4>
               <svg-icon icon-class="plus" />
               {{firstItem.category_name}}
               <div class="button-group">
-                <el-button size="mini" type="danger" round>编辑</el-button>
+                <!-- editCategory()方法 把firstItem.category类名 赋值给 category形参 -->
+                <el-button
+                  size="mini"
+                  type="danger"
+                  @click="editCategory({data: firstItem, type: 'category_first_edit'})"
+                  round
+                >编辑</el-button>
                 <el-button size="mini" type="success" round>添加子级</el-button>
                 <!-- firstItem.id 是由 category.item循环出来 再传参给方法接收 -->
                 <el-button size="mini" @click="deleteCategoryConfirm(firstItem.id)" round>删除</el-button>
               </div>
             </h4>
+            <!-- 二级分类 -->
             <ul v-if="firstItem.children">
               <li v-for="childrenItem in firstItem.children" :key="childrenItem.id">
                 {{childrenItem.category_name}}
@@ -58,8 +66,13 @@
 </template>
 
 <script>
-// 引入 添加一级分类 获取一级分类 删除一级分类 接口
-import { AddFirstCategory, GetCategory, DeleteCategory } from "../../api/news";
+// 引入 添加一级分类 获取一级分类 删除一级分类 修改一级分类 接口
+import {
+  AddFirstCategory,
+  GetCategory,
+  DeleteCategory,
+  EditCategory
+} from "../../api/news";
 export default {
   name: "infoCategory",
   data() {
@@ -81,7 +94,8 @@ export default {
       },
       // 分类列表数据结构
       category: {
-        item: []
+        item: [],
+        current: []
       },
       // loading按钮状态
       submit_button_loading: false,
@@ -90,7 +104,9 @@ export default {
       category_children_disabled: true,
       submit_button_disabled: true,
       // 设置删除的id为空
-      deleteId: ""
+      deleteId: "",
+      // 声明变量来区分类型
+      submit_button_type: ""
     };
   },
   created() {},
@@ -100,7 +116,9 @@ export default {
   },
   methods: {
     //---------------------- 添加一级分类 ----------------------------
-    addFirst() {
+    addFirst(params) {
+      this.submit_button_type = params.type;
+      console.log(this.submit_button_type);
       // 一 二级分类显示/隐藏
       this.category_first_input = true;
       this.category_children_input = false;
@@ -110,7 +128,17 @@ export default {
     },
     //---------------------- 表单提交传参 ----------------------------
     submit() {
-      // 判断为空 弹出Message弹窗
+      // 根据类型 调用不同的方法
+      if (this.submit_button_type == "category_first_add") {
+        this.addFirstCategory();
+      }
+      if (this.submit_button_type == "category_first_edit") {
+        this.editFirstCategory();
+      }
+    },
+    //---------------------- 添加一级分类  ----------------------------
+    addFirstCategory() {
+      // 判断输入框是否为空 弹出Message弹窗
       if (!this.form.categoryName) {
         this.$message({
           message: "分类名称不能为空",
@@ -124,8 +152,8 @@ export default {
       };
       // 提交后 按钮显示loading
       this.submit_button_loading = true;
-      //---------------------- 添加一级分类接口 根据后台API传参 ----------------------------
-      AddFirstCategory({ categoryName: requestData.categoryName })
+      // 调用添加一级分类接口  根据后台API传参
+      AddFirstCategory(requestData)
         .then(response => {
           let data = response.data;
           this.$message({
@@ -154,7 +182,6 @@ export default {
       GetCategory({})
         .then(response => {
           let data = response.data.data.data;
-          console.log(data);
           // 后台数据 传给 分类列表数据结构
           this.category.item = data;
         })
@@ -168,17 +195,60 @@ export default {
       // 使用全局的confirm提示  来自global.js
       this.confirm({
         content: "确认删除当前信息，确认后无法恢复！！",
-        type: "info",
+        tip: "警告",
+        // 点击确定 调用删除接口
         fn: this.deleteCategory,
+        // 点击取消 清空this.deleteId 防止下次点击删除取消出问题
+        catchFn: function() {
+          this.deleteId = "";
+        }
       });
     },
-    //-------------------------- 删除一级分类 根据后台API传参 ------------------------------
-    deleteCategory(categoryID) {
+    //-------------------------- 删除一级分类 ------------------------------
+    deleteCategory() {
       // 调用删除一级分类接口 根据后台API传参
       DeleteCategory({ categoryId: this.deleteId })
         .then(response => {
-          console.log("后台删除");
-          this.getCategory();
+          // ES6 findIndex 查找数据索引
+          let index = this.category.item.findIndex(
+            item => item.id == this.deleteId
+          );
+          // 删除数组指定元素   注： splice(指定开始位置, 删除的数量, 替换新数据[])
+          this.category.item.splice(index, 1);
+        })
+        .catch(error => {});
+    },
+    //-------------------------- 修改一级分类 ------------------------------
+    editCategory(params) {
+      this.submit_button_type = params.type;
+      this.category_first_input = true;
+      this.category_first_disabled = false;
+      this.category_children_input = false;
+      this.submit_button_disabled = false;
+      // 一级分类名称输入 通过categoryName = firstItem.category_name 传参赋值还原名称
+      this.form.categoryName = params.data.category_name;
+      // 存储当前数据对象
+      this.category.current = params.data;
+    },
+    editFirstCategory() {
+      let requestData = {
+        id: this.category.current.id,
+        categoryName: this.form.categoryName
+      };
+      // 调用修改一级分类接口 根据后台API传参
+      EditCategory(requestData)
+        .then(response => {
+          let responseData = response.data.data.data
+          this.$message({
+            message: response.data.message,
+            type: "success"
+          });
+
+          let data = this.category.item.filter(
+            item => item.id == this.category.current.id
+          );
+
+          data[0].category_name = responseData.categoryName;
         })
         .catch(error => {});
     }
