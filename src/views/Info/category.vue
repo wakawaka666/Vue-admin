@@ -18,7 +18,12 @@
                   @click="editCategory({data: firstItem, type: 'category_first_edit'})"
                   round
                 >编辑</el-button>
-                <el-button size="mini" type="success" round>添加子级</el-button>
+                <el-button
+                  size="mini"
+                  type="success"
+                  round
+                  @click="handlerAddChildren({data: firstItem, type: 'category_children_add'})"
+                >添加子级</el-button>
                 <!-- firstItem.id 是由 category.item循环出来 再传参给方法接收 -->
                 <el-button size="mini" @click="deleteCategoryConfirm(firstItem.id)" round>删除</el-button>
               </div>
@@ -66,12 +71,14 @@
 </template>
 
 <script>
-// 引入 添加一级分类 获取一级分类 删除一级分类 修改一级分类 接口
+// 引入 添加一级分类 添加子级分类 获取一级分类 删除一级分类 修改一级分类 接口
 import {
   AddFirstCategory,
+  AddChildrenCategory,
   GetCategory,
   DeleteCategory,
-  EditCategory
+  EditCategory,
+  GetCategoryAll
 } from "../../api/news";
 export default {
   name: "infoCategory",
@@ -112,10 +119,10 @@ export default {
   created() {},
   //----------------------生命周期 当页面DOM挂在完成后 执行实例----------------------------
   mounted() {
-    this.getCategory();
+    this.getCategoryAll();
   },
   methods: {
-    //---------------------- 添加一级分类 ----------------------------
+    //---------------------- 添加一级分类 (交互及确定按钮状态) ----------------------------
     addFirst(params) {
       this.submit_button_type = params.type;
       console.log(this.submit_button_type);
@@ -125,16 +132,6 @@ export default {
       // 当点击添加一级分类 打开 一级分类输入框及按钮
       this.category_first_disabled = false;
       this.submit_button_disabled = false;
-    },
-    //---------------------- 表单提交传参 ----------------------------
-    submit() {
-      // 根据类型 调用不同的方法
-      if (this.submit_button_type == "category_first_add") {
-        this.addFirstCategory();
-      }
-      if (this.submit_button_type == "category_first_edit") {
-        this.editFirstCategory();
-      }
     },
     //---------------------- 添加一级分类  ----------------------------
     addFirstCategory() {
@@ -176,18 +173,82 @@ export default {
           this.form.secCategoryName = "";
         });
     },
+    //---------------------- 添加子级分类 (交互及确定按钮状态) ----------------------------
+    handlerAddChildren(params) {
+      // 禁用一级输入框
+      this.category_first_disabled = true;
+      // 启用子级输入框
+      this.category_children_disabled = false;
+      // 启用确定按钮
+      this.submit_button_disabled = false;
+      // 显示子级输入框
+      this.category_children_input = true;
+      // 存储数据
+      this.category.current = params.data;
+      // 显示一级分类文本
+      this.form.categoryName = params.data.category_name;
+      // 更新确定按钮类型
+      this.submit_button_type = params.type;
+    },
+    //---------------------- 添加子级分类 ----------------------------
+    addChildrenCategory() {
+      if (!this.form.secCategoryName) {
+        this.$message({
+          message: "子级分类名称不能为空！！",
+          type: "error"
+        });
+        return false;
+      }
+      let requestData = {
+        categoryName: this.form.secCategoryName,
+        parentId: this.category.current.id
+      };
+      AddChildrenCategory(requestData).then(response => {
+        let responseData = response.data;
+        this.$message({
+          message: responseData.message,
+          type: "success"
+        });
+        this.getCategoryAll();
+        this.form.secCategoryName = "";
+      });
+    },
+    //---------------------- 表单提交传参 ----------------------------
+    submit() {
+      // 根据类型 调用不同的方法  一级分类添加
+      if (this.submit_button_type == "category_first_add") {
+        this.addFirstCategory();
+      }
+      // 一级分类编辑
+      if (this.submit_button_type == "category_first_edit") {
+        this.editFirstCategory();
+      }
+      // 子级分类添加
+      if (this.submit_button_type == "category_children_add") {
+        this.addChildrenCategory();
+      }
+    },
+
     //-------------------------- 获取一级分类 根据后台API传参 ------------------------------
     getCategory() {
       // 调用获取一级分类接口 根据后台API传参
       GetCategory({})
         .then(response => {
-          let data = response.data.data.data;
+          let responseData = response.data.data.data;
           // 后台数据 传给 分类列表数据结构
-          this.category.item = data;
+          this.category.item = responseData;
         })
         .catch(error => {});
     },
-    //-------------------------- 删除一级分类 confirm提示对话框 ------------------------------
+    //-------------------------- 获取全部分类 根据后台API传参 ------------------------------
+    getCategoryAll() {
+      GetCategoryAll().then(response => {
+        let responseData = response.data.data;
+        this.category.item = responseData;
+        console.log(this.category_item.children.id)
+      });
+    },
+    //-------------------------- 删除一级分类（confirm提示对话框） ------------------------------
     // categoryID接收传参 deleteCategoryConfirm(firstItem.id)
     deleteCategoryConfirm(categoryID) {
       // 把接收的传参 存到 deleteId变量里 使其可以在deleteCategory()方法里面调用其变量
@@ -231,6 +292,15 @@ export default {
       this.category.current = params.data;
     },
     editFirstCategory() {
+      // 当输入框为空 Message提示框
+      if (this.category.current.length == 0) {
+        this.$message({
+          message: "未选择分类！！",
+          type: "error"
+        });
+        return false;
+      }
+      // 传参格式
       let requestData = {
         id: this.category.current.id,
         categoryName: this.form.categoryName
@@ -238,17 +308,16 @@ export default {
       // 调用修改一级分类接口 根据后台API传参
       EditCategory(requestData)
         .then(response => {
-          let responseData = response.data.data.data
+          let responseData = response.data.data.data;
           this.$message({
             message: response.data.message,
             type: "success"
           });
 
-          let data = this.category.item.filter(
-            item => item.id == this.category.current.id
-          );
-
-          data[0].category_name = responseData.categoryName;
+          this.category.current.category_name = responseData.categoryName;
+          // 清空输入框
+          this.form.categoryName = "";
+          this.category.current = [];
         })
         .catch(error => {});
     }

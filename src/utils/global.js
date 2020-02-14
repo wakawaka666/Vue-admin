@@ -1,8 +1,10 @@
-// confirm提示框  自定义的全局方法
+// 自定义的全局方法
+
 export default {
     install(Vue, options) {
-        const str = ""
+        // confirm提示框    
         Vue.prototype.confirm = function (params) {
+            const str = ""
             this.$confirm(params.content, params.tip || "提示", {
                     confirmButtonText: "确定",
                     cancelButtonText: "取消",
@@ -22,8 +24,8 @@ export default {
                 });
         }
 
-        // Vue.prototype.xxxxxxx = function (){
-
+        // Vue.prototype.xxxxx = function () {
+            
         // }...
     }
 }

@@ -66,6 +66,6 @@ export default {
     namespaced: true,
     state,
     getters,
-    mutations,
-    actions
+    mutations,  // this.$store.commit('模块名/方法名')  调用
+    actions  // this.$store.dispatch('模块名/方法名')  调用
 }

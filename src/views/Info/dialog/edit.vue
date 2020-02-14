@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- :visible.sync / @close / @opened点击新增Dialog后再执行方法 -->
-    <el-dialog title="新增" :visible.sync="dialog_info_flag" @close="close" @opened="openDialog">
+    <el-dialog title="编辑" :visible.sync="dialog_info_flag" @close="close" @opened="openDialog">
       <el-form :model="form">
         <el-form-item label="类别：" :label-width="formLabelWidth">
           <el-select v-model="form.category" placeholder="请选择活动区域">
@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { AddInfo } from "../../../api/news";
+import { AddInfo, GetList, EditInfo } from "../../../api/news";
 export default {
   name: "dialogInfo",
   data() {
@@ -48,7 +48,7 @@ export default {
     };
   },
 
-  // 子组件接收到传参 做哪些操作
+  // 子组件接收到属性传参 做哪些操作
   props: {
     flag: {
       type: Boolean, // 自定义接收的值类型
@@ -59,6 +59,10 @@ export default {
       default: function() {
         return [];
       } // 当传参没有值的时候 可以自定义默认值
+    },
+    id: {
+      type: String, // 自定义接收的值类型
+      default: "" // 当传参没有值的时候 可以自定义默认值
     }
   },
 
@@ -88,6 +92,25 @@ export default {
     // 弹窗打开后 父组件index传参
     openDialog() {
       this.categoryOptions.item = this.category;
+      this.getInfo();
+    },
+    // 获取列表 
+    getInfo() {
+      let requestData = {
+        pageNumber: 1,
+        pageSize: 1,
+        id: this.id
+      };
+      GetList(requestData).then(response => {
+        // 拿到第一条数据
+        let responseData = response.data.data.data[0];
+        // 赋值 渲染页面
+        this.form = {
+          category: responseData.categoryId,
+          title: responseData.title,
+          content: responseData.content
+        };
+      });
     },
     // 提交表单
     submit() {
@@ -96,26 +119,28 @@ export default {
           message: "类型不能为空！！",
           type: "error"
         });
-        return false
+        return false;
       }
       this.submitLoading = true;
       // 根据后台API传参
       let requestData = {
-        category: this.form.category,
+        id: this.id,
+        categoryId: this.form.category,
         title: this.form.title,
         content: this.form.content
       };
-      // 调用添加信息接口
-      AddInfo(requestData)
+      // 调用修改信息接口
+      EditInfo(requestData)
         .then(response => {
           this.$message({
             message: response.data.message,
             type: "success"
           });
-          this.submitLoading = false;
+          // $emit 调用父组件的属性  属性值为调用的方法
+          this.$emit("getList")
           this.close()
           this.resetForm();
-          this.$emit("getList")
+          this.submitLoading = false;
         })
         .catch(error => {
           this.submitLoading = false;
