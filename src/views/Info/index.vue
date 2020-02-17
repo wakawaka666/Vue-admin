@@ -81,16 +81,22 @@
       v-loading="formLoading"
       @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" width="45"></el-table-column>
+      <el-table-column type="selection" width></el-table-column>
       <el-table-column prop="title" label="标题" width></el-table-column>
       <el-table-column prop="categoryId" label="类型" :formatter="toCategory" width></el-table-column>
       <!-- :formatter="toData" elementUI formatter属性通过 方法来取得返回值 传给页面做渲染 -->
       <el-table-column prop="createDate" label="日期" :formatter="toDate" width></el-table-column>
       <el-table-column prop="user" label="管理员" width></el-table-column>
-      <el-table-column label="操作">
+      <el-table-column label="操作" width="230px">
         <template slot-scope="scope">
           <!-- scope.row.id相当于response里的id -->
           <el-button size="mini" type="success" @click="editInfo(scope.row.id)">编辑</el-button>
+          <router-link
+            :to="{ name: 'InfoDetail', params:{ id:scope.row.id, title:scope.row.title } }"
+            class="margin-left-10 margin-right-10"
+          >
+            <el-button size="mini" type="success">详情</el-button>
+          </router-link>
           <el-button size="mini" type="danger" @click="deleteItem(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
@@ -118,7 +124,12 @@
     <!-- 新增弹窗  父组件通过flag属性 把dialog_info传参给子组件 -->
     <DialogInfo :flag.sync="dialog_info" :category="options.category" @getList="getList()"></DialogInfo>
     <!-- 编辑弹窗  父组件通过flag属性 把dialog_info传参给子组件 -->
-    <DialogInfoEdit :flag.sync="dialog_info_edit" :id="infoId" :category="options.category" @getList="getList()"></DialogInfoEdit>
+    <DialogInfoEdit
+      :flag.sync="dialog_info_edit"
+      :id="infoId"
+      :category="options.category"
+      @getList="getList()"
+    ></DialogInfoEdit>
   </div>
 </template>
 
@@ -126,7 +137,7 @@
 // dialog
 import DialogInfo from "./dialog/info";
 import DialogInfoEdit from "./dialog/edit";
-import { GetList, GetCategory, DeleteInfo } from "../../api/news";
+import { GetList, DeleteInfo } from "../../api/news";
 import { timestampToTime } from "../../utils/common";
 
 export default {
@@ -175,15 +186,18 @@ export default {
   },
   created() {},
   mounted() {
-    // -------------------VueX 封装管理接口 页面调用----------------------
-    this.$store.dispatch("common/getInfoCategory").then(response => {
-      let data = response.data.data.data;
-      this.options.category = data;
-    });
+    this.getCategory();
     this.getList();
   },
 
   methods: {
+    // --------------------获取分类--------------------------
+    getCategory() {
+      // VueX 封装管理接口 页面调用
+      this.$store.dispatch("common/getCategory").then(response => {
+        this.options.category = response;
+      });
+    },
     // -------------------页码/页面条数----------------------
     handleSizeChange(val) {
       this.page.pageSize = val;
@@ -315,7 +329,7 @@ export default {
       this.deleteInfoId = id;
     },
     editInfo(id) {
-      this.infoId = id
+      this.infoId = id;
       this.dialog_info_edit = true;
     }
   }

@@ -25,11 +25,15 @@
 
           <!-- 二级菜单 -->
           <!-- 使用 vue-router 的模式，启用该模式会在激活导航时以 index 作为 path 进行路由跳转 -->
-          <el-menu-item
+          <template v-for="subItem in item.children">
+            <el-menu-item
             :index="subItem.path"
-            v-for="subItem in item.children"
+            v-if="!subItem.hidden"
             :key="subItem.id"
-          >{{subItem.meta.name}}</el-menu-item>
+            >{{subItem.meta.name}}</el-menu-item>
+          </template>
+          
+          
         </el-submenu>
       </template>
     </el-menu>
@@ -44,7 +48,6 @@ export default {
 
     return {
       // 调取路由信息
-      // console.log(this.$router)
       routers: this.$router.options.routes,
       // elemnt-ui NavMenu展开
       // isCollapse: false

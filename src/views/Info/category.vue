@@ -75,7 +75,6 @@
 import {
   AddFirstCategory,
   AddChildrenCategory,
-  GetCategory,
   DeleteCategory,
   EditCategory,
   GetCategoryAll
@@ -119,7 +118,7 @@ export default {
   created() {},
   //----------------------生命周期 当页面DOM挂在完成后 执行实例----------------------------
   mounted() {
-    this.getCategoryAll();
+    this.getCategory();
   },
   methods: {
     //---------------------- 添加一级分类 (交互及确定按钮状态) ----------------------------
@@ -231,14 +230,10 @@ export default {
 
     //-------------------------- 获取一级分类 根据后台API传参 ------------------------------
     getCategory() {
-      // 调用获取一级分类接口 根据后台API传参
-      GetCategory({})
-        .then(response => {
-          let responseData = response.data.data.data;
-          // 后台数据 传给 分类列表数据结构
-          this.category.item = responseData;
-        })
-        .catch(error => {});
+      // VueX 封装管理接口 页面调用
+      this.$store.dispatch("common/getCategory").then(response => {
+        this.category.item = response;
+      });
     },
     //-------------------------- 获取全部分类 根据后台API传参 ------------------------------
     getCategoryAll() {

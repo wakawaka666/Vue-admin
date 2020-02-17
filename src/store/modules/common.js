@@ -2,11 +2,11 @@
 import {GetCategory} from '../../api/news'  
 
 const actions = {
-    getInfoCategory(content, requestData) {
+    getCategory(content, requestData) {
         return new Promise((resolve, reject) => {
             // 调用GetCategory接口
             GetCategory({}).then((response) => {
-                resolve(response)
+                resolve(response.data.data.data)
             }).catch(error => {
                 reject(error)
             })
