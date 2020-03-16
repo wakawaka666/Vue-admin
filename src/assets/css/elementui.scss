@@ -1,3 +1,7 @@
+.el-menu-vertical-demo {
+    width: 100%;
+}
+
 // 修改选中条目样式
 .el-submenu .el-menu-item {
     font-size: 14px;
@@ -34,7 +38,7 @@
         }
 
         >.el-menu-item:hover {
-            background-color: blue !important;
+            background-color: #409EFF !important;
         }
 
         padding: 0px 0px !important;
@@ -51,29 +55,43 @@
 }
 
 //table样式
-.el-table{
-    td, th{text-align: center;}
-    th{
+.el-table {
+
+    td,
+    th {
+        text-align: center;
+    }
+
+    th {
         font-weight: bold;
         color: #000;
     }
-    td{
+
+    td {
         font-size: 14px;
     }
 }
 
 //dialog样式
-.el-dialog__body{
+.el-dialog__body {
     padding: 30px 47px;
 }
-.el-form{
-    .el-form-item:last-child{
+
+.el-form {
+    .el-form-item:last-child {
         margin-bottom: 0px;
     }
 }
-.dialog-footer{
-    .el-button{
+
+.dialog-footer {
+    .el-button {
         width: 150px;
     }
+
     text-align: center;
+}
+
+// 上传框
+.el-upload {
+    border: 1px dashed #d9d9d9;
 }

@@ -118,3 +118,15 @@ export function EditCategory(data) {
         data
     })
 }
+
+ /*
+ 获取七牛云token
+ */
+export function QiniuToKen(data) {
+    // return 从request.js请求错误的信息返回给index.vue 里的 GetSms()
+    return service.request({
+        method: "post",
+        url: "/uploadImgToken/",
+        data
+    })
+}

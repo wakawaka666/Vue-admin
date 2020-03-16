@@ -16,7 +16,19 @@
         <el-input v-model="form.title"></el-input>
       </el-form-item>
 
-      <el-form-item label="缩略图："></el-form-item>
+      <el-form-item label="缩略图：">
+        <el-upload
+          class="avatar-uploader"
+          action="https://up-z2.qiniup.com"
+          :data="data.uploadKey"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload"
+        >
+          <img v-if="form.imgUrl" :src="form.imgUrl" class="avatar" />
+          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
+      </el-form-item>
 
       <el-form-item label="发布日期：">
         <el-date-picker v-model="form.dataTime" type="date" placeholder="选择日期" :disabled="true"></el-date-picker>
@@ -34,7 +46,7 @@
 </template>
 
 <script>
-import { GetList, EditInfo } from "../../api/news.js";
+import { GetList, EditInfo, QiniuToKen } from "../../api/news.js";
 import { timestampToTime } from "../../utils/common";
 
 import { quillEditor } from "vue-quill-editor";
@@ -51,13 +63,18 @@ export default {
       title: this.$route.params.title,
       data: {
         category: [],
-        editorOption: {}
+        editorOption: {},
+        uploadKey:{ 
+          token: "",  // 接收七牛云返回token
+          key:""  // 接收图片上传后的key
+        }
       },
       form: {
         categoryId: "",
         title: "",
         dataTime: "",
-        content: ""
+        content: "",
+        imgUrl: ""
       },
       submitLoading: false,
       formLoading: true
@@ -68,12 +85,11 @@ export default {
   computed: {},
   created() {},
   mounted() {
-    console.log(this.id);
-    console.log(this.title);
     // 获取分类
-    this.getInfoCategory()
+    this.getInfoCategory();
     // 获取列表
     this.getList();
+    this.getQiniuToKen()
   },
   methods: {
     // 获取分类
@@ -93,18 +109,52 @@ export default {
       GetList(requestData)
         .then(response => {
           let responseData = response.data.data.data[0];
-          console.log(responseData)
           this.form.categoryId = responseData.categoryId;
           this.form.title = responseData.title;
           this.form.dataTime = timestampToTime(responseData.createDate);
           this.form.content = responseData.content;
+          this.form.imgUrl = responseData.imgUrl;
           this.formLoading = false;
         })
         .catch(error => {
           this.formLoading = false;
         });
     },
-    // 修改数据内容
+    // 获取七牛云ToKen
+    getQiniuToKen(){
+      let requestData = {
+        "accesskey": "6X23KIUVA-OeztkG0o3GcgY_ZK0BkX1rqUf8GjAZ",
+        "secretkey": "yMubs3KfPwS7SaSW3OJw-y52efWe0NoKedgBAEMC",
+        "buckety": "joekore"
+      }
+      QiniuToKen(requestData).then(response => {
+        console.log(response)
+        let responseData = response.data.data.token
+        this.data.uploadKey.token = responseData
+      })
+    },
+    handleAvatarSuccess(res, file) {
+      console.log(res)
+      // this.form.imgUrl = `http://xxxxxxx${res.key}`
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === "image/jpeg";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error("上传头像图片只能是 JPG 格式!");
+      }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+
+      // 文件名转码
+      let suffix = file.name
+      let key = encodeURI(`${suffix}`)
+      this.data.uploadKey.key = key
+
+      return isJPG && isLt2M;
+    },
     // 提交表单
     submit() {
       this.submitLoading = true;
@@ -113,7 +163,8 @@ export default {
         id: this.id,
         categoryId: this.form.categoryId,
         title: this.form.title,
-        content: this.form.content
+        content: this.form.content,
+        imgUrl: this.form.imgUrl
       };
       // 调用修改信息接口
       EditInfo(requestData)
@@ -127,10 +178,33 @@ export default {
         .catch(error => {
           this.submitLoading = false;
         });
-    }
+    },
   }
 };
 </script>
 
-<style lang="">
+<style lang="scss" scoped>
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

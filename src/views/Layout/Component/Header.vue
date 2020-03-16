@@ -6,7 +6,7 @@
     <div class="pull-right">
       <div class="user-info pull-left">
         <div class="pull-left avatar-margin">
-        <svg-icon iconClass="avatar" className="avatar" />
+          <svg-icon iconClass="avatar" className="avatar" />
         </div>
         <div class="pull-right">
           {{username}}
@@ -52,6 +52,7 @@ export default {
 @import "../../../assets/css/config.scss";
 
 #header-wrap {
+  z-index: 1;
   position: fixed;
   top: 0;
   right: 0;
@@ -63,17 +64,19 @@ export default {
   @include webkit(transition,all .3s ease 0s);
   .pull-left {
     float: left;
+    height: 75px;
   }
   .pull-right {
     float: right;
+    height: 75px;
   }
   .header-icon {
     padding: 0 32px;
-    
   }
   .user-info{
     height: 100%;
     border-right: 1px solid #ededed;
+    
     padding: 0 32px;
     + .header-icon{
       padding: 0 28px;
